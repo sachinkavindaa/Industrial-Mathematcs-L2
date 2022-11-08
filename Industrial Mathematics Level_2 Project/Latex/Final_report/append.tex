@@ -1,0 +1,902 @@
+\chapter*{Appendix}
+
+
+\textbf{\Large Code 01}\\
+
+\begin{framed}
+\begin{verbatim}
+    clc;
+clear all;
+
+%Degree of freedom
+
+
+%input mass_1
+M1 = 0.815
+%input mass_2
+M2 = 3.099
+
+%Inputs for spring constants.
+K1 = 41.5
+
+%Inputs for spring constants.
+K2 = 138
+
+%Inputs for spring constants.
+K3 = 157.8
+
+%Mass matrix
+M = [M1 0; 0 M2];
+
+%Stiffness matrix
+K = [K1+K2 -K2 ; -K2 K2+K3];
+
+%Estimation natural frequncies and mode shapes
+
+[modeShape fr] = eig(K,M);
+
+%Coffecient matrix
+
+A00 = zeros(2);
+A11 = eye(2);
+CC = [A00 A11; -inv(M)*K A00];
+global CC
+
+%%Time step and time vector
+
+max_freq = max(sqrt(diag(fr))/(2*pi)); %maximum frequency in Hz
+dt = 1/(max_freq*20);
+Nstep = 100;
+time = 0:dt:Nstep*dt;
+
+y0 = [0.005 0.005 0 0]; %[disp1 disp2 vol1 vol2] inatial condition
+[tsol,ysol] = ode45('testcode',time,y0);
+
+y1 = ysol(:,1);
+y2 = ysol(:,2);
+v1 = ysol(:,3);
+v2 = ysol(:,4);
+
+idxmin = find(y1 == max(y1))
+idxmax = find(y1 == min(y1))
+
+
+
+figure()
+plot(time,y1,'--r','linewidth',1.5);
+hold on
+plot(time,y2,'-.b','linewidth',1.5);
+hold off
+% plot(y1(idxmin),y1(idxmax),'*','MarkerFaceColor','red',...
+%     'MarkerSize',10)
+% % hold on
+% % plot(y2(idxmax),y1(idxmax),'-p','MarkerFaceColor','black',...
+% %     'MarkerSize',10)
+% hold off
+xlabel('Time (s)');
+ylabel('Displacement (m)');
+title('Displacement VS Time')
+legend('Mass 1','Mass 2');
+grid on
+
+figure()
+plot(time,v1,'--r','linewidth',1.5);
+hold on
+plot(time,v2,'-.b','linewidth',1.5);
+hold on
+xlabel('Time(s)');
+ylabel('Velocity (m/s)');
+title('Velocity VS Time')
+legend('Mass 1','Mass 2');
+grid on
+
+figure()
+plot(y1,y2,'--r','linewidth',1);
+hold on
+xlabel('Time(s)');
+ylabel('Velocity (m/s)');
+title('Velocity VS Time')
+legend('Mass 1','Mass 2');
+grid on
+
+
+\end{verbatim}
+\end{framed}
+
+\newpage
+
+\begin{framed}
+\begin{verbatim}
+    clear all; 
+close all;
+clc;
+tic
+
+%input mass_1
+m1 = input('Enter value of mass_1 (kg):   \n');
+%input mass_2
+m2 = input('Enter value of mass_2 (kg):   \n');
+
+%Inputs for spring constants.
+k1 = input('Enter value of the spring constants (N/m): \n');
+%Inputs for spring constants.
+k2 = input('Enter value of the spring constants (N/m): \n');
+%Inputs for spring constants.
+k3 = input('Enter value of the spring constants (N/m): \n');
+
+x10=1; % mass 1 initial position 
+x20=1; % mass 2 initial position 
+
+v10=0; % mass 1 initial velocity 
+v20=0; % mass 2 initial velocity 
+
+% Set time step 
+simTime=1; % simulation time 
+tStep=0.01; % simulation time step
+
+iterations=simTime/tStep;
+t=0:iterations;
+
+% variables for speed
+x1=zeros(iterations,1);
+x1(1,:)=x10;
+x2=zeros(iterations,1);
+x2(1,:)=x20;
+
+v1=zeros(iterations,1);
+v1(1,:)=v10;
+v2=zeros(iterations,1);
+v2(1,:)=v20;
+
+a1=zeros(iterations,1);
+a1(1,:)=( k3*(x20-x10) + -k1*x10)/m1;
+a2=zeros(iterations,1);
+a2(1,:)= (-(k2+k3)*x20 + k3*x10)/m2;
+
+% Set up video
+v=VideoWriter('twomass.avi');
+v.FrameRate=100;
+open(v);
+
+set(gcf, 'Position',  [50, 50, 700, 600])%positions of plot
+
+for n=2:(iterations+1)
+    
+  %euler method
+    
+  x1(n,:)=x1(n-1,:)+v1(n-1,:)*tStep;
+  x2(n,:)=x2(n-1,:)+v2(n-1,:)*tStep;
+  
+  v1(n,:)=v1(n-1,:)+a1(n-1,:)*tStep;
+  v2(n,:)=v2(n-1,:)+a2(n-1,:)*tStep;
+  
+  a1(n,:)=(k3*((x2(n,:))-(x1(n,:)))+-k1*(x1(n,:)))/m1;
+  a2(n,:)=(-(k2+k3)*(x2(n,:))+k3*(x1(n,:)))/m2;
+
+  % Plot for the video
+  subplot(4,1,1)
+  
+  hold on;
+  plot(t(:,1:n),x1(1:n,:),'r')
+  plot(t(:,1:n),x2(1:n,:),'m')
+  
+  xlim([0 iterations])
+  ylabel('Position(m)')
+  legend('mass 1','mass 2')
+  
+  subplot(4,1,2)
+  
+  hold on;
+  plot(t(:,1:n),v1(1:n,:),'b')
+  plot(t(:,1:n),v2(1:n,:),'c')
+ 
+  xlim([0 iterations])
+  ylabel('Velocity(m/s)')
+  legend('mass 1','mass 2')
+  
+  subplot(4,1,3)
+  
+  hold on;
+  plot(t(:,1:n),a1(1:n,:),'g')
+  plot(t(:,1:n),a2(1:n,:),'y')
+ 
+  xlim([0 iterations])
+  ylabel('Acceleration(m/s^2)')
+  legend('mass 1','mass 2')
+  
+  subplot(4,1,4)
+  
+  hold on;
+  fill([0 9 9 0],[0 0 1.5 1.5],'w'); % clears background
+  
+  plot([x1(n,:)+3 0],[0.25 0.25],'k'); % springs
+  plot([x1(n,:)+3 x2(n,:)+6],[0.25 0.25],'k');
+  plot([x2(n,:)+6 9],[0.25 0.25],'k');
+  
+  fill([x1(n,:)+2.75 x1(n,:)+3.25 x1(n,:)+3.25 x1(n,:)+2.75],
+  [0 0 0.5 0.5],'g'); % mass 1
+  fill([x2(n,:)+5.75 x2(n,:)+6.25 x2(n,:)+6.25 x2(n,:)+5.75],
+  [0 0 0.5 0.5],'g'); % mass 2
+  
+  fill([0 0.1 0.1 0],[0 0 1 1],[0.5 0.5 0.5]);
+  fill([8.9 9 9 8.9],[0 0 1 1],[0.5 0.5 0.5]);
+
+  xlim([0 9]);
+  ylim([0 1.5]);
+  frame=getframe(gcf);
+  writeVideo(v,frame)
+  
+end
+close(v);
+
+figure,
+
+subplot(3,1,1)
+hold on;
+plot(t',x1,'r')
+plot(t',x2,'m')
+ylabel('Position (m)')
+title('Position, Velocity, & Acceleration as a Function of Time')
+legend('mass1','mass2')
+grid on
+
+subplot(3,1,2)
+hold on;
+plot(t',v1,'b')
+plot(t',v2,'c')
+ylabel('Velocity (m/s)')
+legend('mass1','mass2')
+grid on
+
+subplot(3,1,3)
+hold on;
+plot(t',a1,'g')
+plot(t',a2,'y')
+ylabel('Acceleration (m/s^2)')
+xlabel('time (iterations)')
+legend('mass1','mass2')
+grid on
+
+toc
+
+
+\end{verbatim}
+\end{framed}
+
+\begin{framed}
+\begin{verbatim}
+    function [x_new,y_new] = sp1(x0,y0,x1,y1,n,r)
+x=x0:((x1-x0)/n):x1;
+y=((y1-y0)/(x1-x0))*x+y0-((y1-y0)/(x1-x0))*x0;
+m=(y1-y0)/(x1-x0);
+T=abs(atan(m));
+s=length(x);
+x_new=zeros(1,s);
+y_new=zeros(1,s);
+for i=1:s
+  x_new(i)=x(i)+r*(-1)^(i)*sin(T);
+  y_new(i)=y(i)+r*(-1)^(i)*cos(T);
+end
+\end{verbatim}
+\end{framed}
+
+\newpage
+
+\textbf{\Large Code 02}\\
+
+
+
+
+
+
+\begin{framed}
+\begin{verbatim}
+
+clear all; 
+close all;
+clc;
+
+% Assume spring constants are equivalent and masses are equivelent.
+
+%input Mass Value
+m = input('Enter value of Mass Weight (kg):   \n');
+%Input for spring constants.
+k = input('Enter value of the spring constants (N/m): \n');
+%Input for spring constants.
+n = input('Number of Masses: \n');
+% simulation time
+t = input('Simulation time period: \n');
+
+tStep=0.001;
+mode=2; % must be <= n
+
+% Create mass and stiffness matrices based on generalized FBD's
+
+% mass matrix is an identity matrix
+M=m.*eye(n); 
+e=ones(n,1);
+
+% stiffness matrix
+K=spdiags([-k.*e 2*k.*e -k.*e],-1:1,n,n);
+
+% make the K matrix into a full matrix
+K=full(K); 
+
+% Returns phi (eigenvectors) and lambda (eigenvalues) - M*phi*lambda=K*phi
+[phi,lambda]=eig(K,M);
+% Get natural frequencies from eigenvalues
+Wn=sqrt(diag(lambda)); 
+
+% Time step setup
+% total number of iterations
+iterations=t/tStep;
+
+% time vector (for plotting purposes)
+tVector=tStep.*(1:iterations); 
+
+% Pre-allocate arrays for speed
+x=zeros(iterations,n);
+v=zeros(iterations,n);
+a=zeros(iterations,n);
+
+% initial displacements governed by desired mode
+x(1,:)=phi(:,mode); 
+
+% Iteratively solve equations of motion using Semi-implicit Euler
+for i=2:iterations
+    for j=1:n
+        a(i,j)=(-K(j,:)./M(j,j))*(x(i-1,:)');
+        v(i,j)=v(i-1,j)+a(i,j)*tStep;
+        x(i,j)=x(i-1,j)+v(i,j)*tStep;
+    end
+end
+
+% Plot the results
+for k=1:n
+    subplot(3,1,1); hold on; grid on;
+    plot(tVector,x(:,k))
+    subplot(3,1,2); hold on; grid on;
+    plot(tVector,v(:,k))
+    subplot(3,1,3); hold on; grid on;
+    plot(tVector,a(:,k))
+end
+
+subplot(3,1,1);
+title('Position, Velocity, and Acceleration as a Function of Time');
+ylabel('Position (m)');
+grid on;
+
+subplot(3,1,2);
+ylabel('Velocity (m/s)');
+subplot(3,1,3);
+ylabel('Acceleration (m/s^2)');
+xlabel('Time (s)');
+grid on;
+
+
+
+\end{verbatim}
+\end{framed}
+
+\begin{framed}
+
+\begin{verbatim}
+    clc;
+clear all;
+close all;
+
+%%%  User input %%% 
+
+
+% spring costants kS  
+   kS = 41.5;
+
+% mass of atoms or particles m 
+   m = 0.815;
+
+% The equilibrium separation distance between masses 
+   d = 0.01;
+   
+% Number of mass N
+   N = 100;
+
+% Parameters for propagation constant k
+   kMin = -3.9999; 
+   kMax = 3.9999; 
+   kN = 1501;
+
+% Max angular frequency
+   omega0 = sqrt(4*kS/m);
+
+% Max GROUP velcoity   
+   v0 = d*sqrt(kS/m);
+
+% Propagation constant k [units: pi/d]   
+   n = linspace(kMin,kMax,kN);
+   k = n.*pi/d;
+
+% Brillouin zone
+   n1 = find(n>-1,1); 
+   n2 = find(n>1,1);
+   
+% Wavelength   lambda  
+   lambda = 2*pi./k;
+
+% Angular frequency of propagating wave
+   omega = omega0 .* abs( sin(n*pi/2) );
+
+% Phase velocity  vP
+   vP = abs( (omega)./(k) );
+
+% Group Velocity
+   vG = v0 .* abs( cos(n*pi/2) );
+
+%%% MASS DISPLACEMENTS %%%
+
+
+% X axis
+  x = linspace(0,N*d,N);
+
+% Wavelengths
+  wL1 = 1.2*N*d;
+  wL2 = d/2;
+
+% Mass displacements
+   e1 = sin(2*pi*x/wL1);
+   e2 = sin(2*pi*x/wL2);  
+
+% Single set of displacements
+  Ls = N*d;
+  es = sin(2*pi*x/Ls);
+
+  xs = linspace(0,N*d,501);
+  Ls1 = N*d;
+  es1 = sin(2*pi*xs/Ls1);
+  
+  Ls2 = d;
+  es2 = sin(2*pi*xs/Ls2);
+
+  % GRAPHICS ============================================================ 
+
+   figure(1)
+   subplot(3,1,1)
+   xP = n; 
+   yP = omega;
+   plot(xP,yP,'b','linewidth',2)
+   hold on
+   xP = n(n1:n2); 
+   yP = omega(n1:n2);
+   plot(xP,yP,'r','linewidth',3)
+   
+   grid on
+   set(gca,'fontsize',12)
+   xlabel('k   [ \pi  / d ]')
+   ylabel('\omega')
+   title(' Dispersion relationship \omega VS k')
+   
+   subplot(3,1,2)
+   xP = n; 
+   yP = vP;
+   plot(xP,yP,'b','linewidth',2)
+   hold on
+   xP = n(n1:n2); 
+   yP = vP(n1:n2);
+   plot(xP,yP,'r','linewidth',3)
+   
+   grid on
+   set(gca,'fontsize',12)
+   xlabel('k   [ \pi  / d ]')
+   ylabel('v_P')
+   title(' Dispersion relationship v_P VS k')
+   
+   subplot(3,1,3)
+   xP = n; 
+   yP = vG;
+   plot(xP,yP,'b','linewidth',2)
+   hold on
+   xP = n(n1:n2);
+   yP = vG(n1:n2);
+   plot(xP,yP,'r','linewidth',3)
+   
+   grid on
+   set(gca,'fontsize',12)
+   xlabel('k   [ \pi  / d ]')
+   ylabel('v_G')
+   title(' Dispersion relationship v_G VS k')
+   
+   figure(2)
+   
+ 
+   subplot(2,1,1)
+   xP = x; yP = e1;
+   hPlot = stem(xP,yP,'o');
+   set(hPlot,'markersize',4,'markerfacecolor','b')
+   grid on
+   set(gca,'fontsize',12)
+   ylabel('left   right')
+   
+   subplot(2,1,2)
+   xP = x; yP = e2;
+   hPlot = stem(xP,yP,'o');
+   set(hPlot,'markersize',4,'markerfacecolor','b')
+   grid on
+   set(gca,'fontsize',12)
+   xlabel('x')
+   ylabel('left   right')
+
+   suptitle('Displacements on the monatomic lattice')
+
+   
+ 
+\end{verbatim}
+   \end{framed}        
+
+\newpage
+
+\textbf{\Large Code 03}\\
+
+\begin{framed}
+\begin{verbatim}
+    clear all
+close all
+clc
+
+% Initialise variables
+%input Mass Value
+m = 0.815
+%Input for spring constants.
+k = 41.5
+%Input length of spring.
+l = 0.01
+
+h = 0.001;
+t = 0:h:10;
+N = length(t);
+
+% Initialise vectors
+z1    = zeros(N,1);
+z2    = zeros(N,1);
+z3    = zeros(N,1);
+z4    = zeros(N,1);
+
+w = (-k)/m;
+
+% Initialise derivative functions
+
+dz1 = @(t, z1, z2, z3, z4) z3;               % dx/dt = z1 
+dz2 = @(t, z1, z2, z3, z4) z4;               % dy/dt = z2 
+dz3 = @(t, z1, z2, z3, z4)
+w*( (((z1+l)*(sqrt((z1+l).^2 + z2.^2)-l))./(sqrt( (z1+l).^2 + z2.^2 )))+ 
+
+(( z1*(sqrt( (z2+l).^2 + z1.^2)-l))./(sqrt( (z2+l).^2 + z1.^2)))-
+
+(( (l-z1)*(sqrt( (l-z1).^2 + z2.^2)-l))./(sqrt( (l-z1).^2 + z2.^2)))+
+
+((z1*(sqrt((l-z2).^2 + z1.^2)-l))./(sqrt((l-z2).^2 + z1.^2 ))));
+
+% dz1/dt = z3
+
+dz4 = @(t, z1, z2, z3, z4) w*( ((z2*(sqrt((z1+l).^2 + z2.^2)-l))./
+
+(sqrt((z1+l).^2 + z2.^2)))+((z2*(sqrt((l-z1).^2 + z2.^2)-l))./
+
+(sqrt( (l-z1).^2 + z2.^2)))+(((z2+l)*(sqrt(z1.^2 + (z2+l).^2)-l))./
+
+(sqrt(z1.^2 + (z2+l).^2)))+(((z2-l)*(sqrt(z1.^2 + (l-z2).^2)-l))./
+
+(sqrt(z1.^2 + (l-z2).^2))));  % dz2/dt = z4 
+
+%Starting conditions
+
+z1(1) = 0.005; 
+z2(1) = 0;
+z3(1) = 0;
+z4(1) = 0;
+
+% Initialise K vectors
+
+kz1 = zeros(1,4); % to store K values for z1
+kz2 = zeros(1,4); % to store K values for z2
+kz3 = zeros(1,4); % to store K values for z3
+kz4 = zeros(1,4); % to store K values for z4
+
+b = [1 2 2 1];   % RK4 coefficients
+
+
+% Iterate, computing each K value in turn, then the i+1 step values by
+Runge kutta method
+
+for i = 1:(N-1)
+    kz1(1) = dz1(t(i), z1(i), z2(i), z3(i) , z4(i));
+    kz2(1) = dz2(t(i), z1(i), z2(i), z3(i) , z4(i));
+    kz3(1) = dz3(t(i), z1(i), z2(i), z3(i) , z4(i));
+    kz4(1) = dz4(t(i), z1(i), z2(i), z3(i) , z4(i));
+
+    kz1(2) = dz1(t(i) + (h/2), z1(i) + (h/2)*kz1(1), z2(i) + (h/2)*kz2(1), 
+    z3(i) + (h/2)*kz3(1) , z4(i) + (h/2)*kz4(1));
+    kz2(2) = dz2(t(i) + (h/2), z1(i) + (h/2)*kz1(1), z2(i) + (h/2)*kz2(1), 
+    z3(i) + (h/2)*kz3(1) , z4(i) + (h/2)*kz4(1));
+    kz3(2) = dz3(t(i) + (h/2), z1(i) + (h/2)*kz1(1), z2(i) + (h/2)*kz2(1), 
+    z3(i) + (h/2)*kz3(1) , z4(i) + (h/2)*kz4(1));
+    kz4(2) = dz4(t(i) + (h/2), z1(i) + (h/2)*kz1(1), z2(i) + (h/2)*kz2(1), 
+    z3(i) + (h/2)*kz3(1) , z4(i) + (h/2)*kz4(1));
+    
+    kz1(3) = dz1(t(i) + (h/2), z1(i) + (h/2)*kz1(2), z2(i) + (h/2)*kz2(2), 
+    z3(i) + (h/2)*kz3(2) , z4(i) + (h/2)*kz4(2));
+    kz2(3) = dz2(t(i) + (h/2), z1(i) + (h/2)*kz1(2), z2(i) + (h/2)*kz2(2), 
+    z3(i) + (h/2)*kz3(2) , z4(i) + (h/2)*kz4(2));
+    kz3(3) = dz3(t(i) + (h/2), z1(i) + (h/2)*kz1(2), z2(i) + (h/2)*kz2(2), 
+    z3(i) + (h/2)*kz3(2) , z4(i) + (h/2)*kz4(2));
+    kz4(3) = dz4(t(i) + (h/2), z1(i) + (h/2)*kz1(2), z2(i) + (h/2)*kz2(2), 
+    z3(i) + (h/2)*kz3(2) , z4(i) + (h/2)*kz4(2));
+
+    kz1(4) = dz1(t(i) + h, z1(i) + h*kz1(3), z2(i) + h*kz2(3), z3(i) +
+    h*kz3(3) , z4(i)+ h*kz4(3));
+    kz2(4) = dz2(t(i) + h, z1(i) + h*kz1(3), z2(i) + h*kz2(3), z3(i) + 
+    h*kz3(3) , z4(i)+ h*kz4(3));
+    kz3(4) = dz3(t(i) + h, z1(i) + h*kz1(3), z2(i) + h*kz2(3), z3(i) + 
+    h*kz3(3) , z4(i)+ h*kz4(3));
+    kz4(4) = dz4(t(i) + h, z1(i) + h*kz1(3), z2(i) + h*kz2(3), z3(i) +
+    h*kz3(3) , z4(i)+ h*kz4(3));
+    
+    z1(i+1) = z1(i) + (h/6)*sum(b.*kz1);      
+    z2(i+1) = z2(i) + (h/6)*sum(b.*kz2);      
+    z3(i+1) = z3(i) + (h/6)*sum(b.*kz3);
+    z4(i+1) = z4(i) + (h/6)*sum(b.*kz4);
+     
+    
+end   
+
+%displacments of springs
+
+spring_1 = sqrt((z1+l).^2+ z2.^2)-l ; %l1
+spring_4 = sqrt((z2+l).^2+ z1.^2)-l ; %l4
+spring_2 = l- sqrt((l-z2).^2+ z1.^2); %l2
+spring_3 = l- sqrt((l-z1).^2+ z2.^2); %l3
+
+% Group together in one solution matrix
+
+disp('Values of t z1 z2 z3 z4 spring_1 spring_2 spring_3 spring_4 ');
+Answer_Matrix = [t' z1 z2 z3 z4 spring_1 spring_2 spring_3 spring_4 ];
+
+
+%plot results
+
+figure()
+plot(t,z1,'--r','linewidth',1.5);
+hold on
+plot(t,z2,'-.b','linewidth',1.5);
+hold on
+xlabel('Time(s)');
+ylabel('Displacement (m)');
+title('Displacement VS Time')
+legend('X direction', 'Y direction');
+grid on
+
+figure()
+plot(t,z3,'--r','linewidth',1.5);
+hold on
+plot(t,z4,'-.b','linewidth',1.5);
+hold on
+xlabel('Time(s)');
+ylabel('Velocity (m/s)');
+title('Velocity VS Time')
+legend('X direction', 'Y direction');
+grid on
+
+figure()
+plot(t,spring_1,'linewidth',1);
+hold on
+plot(t,spring_2,'linewidth',1);
+hold on
+plot(t,spring_3,'linewidth',1);
+hold on
+plot(t,spring_4,'linewidth',1);
+hold on
+xlabel('Time(s)');
+ylabel('Behaviour of spring (m)');
+title('Behaviour of spring VS Time')
+legend('Spring 1', 'Spring 2','Spring 3','Spring 4');
+grid on
+
+figure()
+plot(z1,z2,'--r','linewidth',1.5);
+xlabel('Time(s)');
+ylabel('Velocity (m/s)');
+title('Velocity VS Time')
+legend('X direction', 'Y direction');
+grid on
+
+\end{verbatim}
+\end{framed}
+
+\begin{framed}
+\begin{verbatim}
+    clear all
+close all
+clc
+
+n=100;
+r=0.1;
+
+load path.mat;
+
+x=D(:,1);
+y=D(:,2);
+
+
+figure(1);
+plot(x(1:end),y(1:end),'r','linewidth',2)
+ylabel('y-axis,horizontal position')
+xlabel('x-axis,vertical position')
+title('Vertical position and horizontl position')
+grid on;
+
+
+figure(2)
+plot(-3,0,'r.');
+hold on 
+plot(0,-3,'r.');
+plot(3,0,'r.');
+plot(0,3,'r.');
+axis tight
+
+for j = 1:length(x)
+    
+    [x1,y1] = sp1(0,-3,x(j),y(j),n,r);
+    h=plot(x1,y1,'k-','LineWidth',2);
+    hold on
+    
+    [x2,y2] = sp1(0,3,x(j),y(j),n,r);
+    h=plot(x2,y2,'k-','LineWidth',2);
+    
+    [x3,y3] = sp1(-3,0,x(j),y(j),n,r);
+    h=plot(x3,y3,'k-','LineWidth',2);
+    
+    [x4,y4] = sp1(3,0,x(j),y(j),n,r);
+    h=plot(x4,y4,'k-','LineWidth',2);
+    
+    plot(-3,0,'r.');
+    plot(0,-3,'r.');
+    plot(3,0,'r.');
+    plot(0,3,'r.');
+    
+    h=plot(x(j),y(j),'--rs','LineWidth',2,'MarkerEdgeColor','k',...
+                'MarkerFaceColor','g',...
+                'MarkerSize',30);
+            grid on
+	drawnow
+    %pause(0.005);
+	delete(h)
+	hold off
+end
+
+    
+\end{verbatim}
+\end{framed}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

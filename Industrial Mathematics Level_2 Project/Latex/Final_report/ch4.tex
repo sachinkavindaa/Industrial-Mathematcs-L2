@@ -1,0 +1,210 @@
+\chapter{Numerical Method for Ordinary Differential Equations}
+\label{chap:04}
+
+\paragraph{}
+
+Differential equations can define almost any system that is changing. They are common in science and engineering, economics, social science, biology, business, and health care, among other fields. Numerous mathematicians have explained the structure of these equations, and many complex systems can indeed be precisely described using compact mathematical expressions \cite{atkinson2019data,braun1983differential}. Furthermore, most differential equation-based systems are so complicated, or the systems they depict are so large, that a purely mathematical description is impossible. Therefore, computer simulations and numerical approximations are helpful in these complex systems.
+
+ Before programmable computer systems, technology for solving differential equations based on numerical approximations was formed. It was widespread to see equations being solved in rooms full of people using mechanical calculators. Since computer speed and cost have risen, increasingly complicated systems of differential equations can be remedied on a single computer \cite{epperson2021introduction}. This section will go over some fundamental strategies and processes for solving differential equations with your hands and MATLAB. We will go over the fundamentals of differential equations of several spring mass systems corresponding to relevant tasks. Following that, we will  introduce the Runge-Kutta fourth order method to obtain to numerical results. 
+
+
+\section{Numerical analysis for the motion of undamped linear systems with coupled two degrees of freedom}
+\label{sec:4.1}
+\paragraph{}
+
+In this section, all the details about numerical analysis for the motion of undamped linear systems with coupled two degrees of freedom are presented.  As earlier stated, two differential equations ( equation \eqref{aab} and equation \eqref{aac}) of motion are coupled with two degrees of freedom and will be discussed. To the obatain the of the numerical results, first we have to define the value of other parameters. Such as mass 1 ($m_1$), mass 2 ($m_2$), spring constants ($k_1,k_2,k_3$), initial position of the mass 1 ($x_1$) and initial position of the mass 2 ($x_2$). Therefore, all the parameters' values were more explained in the given table. 
+
+\begin{table}[hbt!]
+\begin{center}
+    \begin{tabular}{p{6cm}|p{2cm}|p{3cm}}
+    \hline
+    \textbf{Description of constant} & \textbf{Constant} & \textbf{Values}
+    \\
+    \hline \hline
+    Mass 1 & $m_1$ & 0.815 $(kg)$\\
+    Mass 1 & $m_1$ & 0.815 $(kg)$\\
+      Spring constant 1  & $k_1$ & 41.5 $(N/m)$\\
+      Spring constant 2  & $k_2$  &138 $(N/m)$\\
+    Spring constant 3  & $k_3$ & 157.8 $(N/m)$\\
+     Initial position of mass 1 & $x_1$ & $*$ \\
+     Initial position of mass 1 & $x_2$ & $*$  \\
+     Initial velocity of mass 1 & $\dot{x_1}$ & $*$ \\
+     Initial velocity of mass 2 & $\dot{x_2}$ & $*$  \\
+     Step size & $h$ & $*$  \\
+     Time period & $t$ & 100 $(s)$ \\
+     \hline
+    \end{tabular}
+    \caption{Description of the constant. Values were taken from \cite{JETIRRes28:online}. During the experiment $*$ will be varied. }
+    \label{tab1}
+    \end{center}
+\end{table}
+
+%\subsection{Convert the second order differential equation of spring mass system into first order differential equation}
+
+The motion of equations observed in section \ref{2DOF}.  
+
+\begin{equation}
+\label{aab}
+    m_1\dot{x_1}+(k_1+k_2)x_1-k_2x_2=0
+\end{equation}
+\begin{equation}
+\label{aac}
+    m_2\dot{x_2}-k_2x_1+(k_2+k_3)x_2 = 0
+\end{equation}
+
+Changing variables and replacing them in equation \eqref{aab} and equation \eqref{aac}. 
+
+Let, $x_1 = y_1$, \quad $\dot{x_1} = y_2 $, \quad $x_2 = y_3$ \quad and \quad $\dot{x_2} = y_4$
+
+\begin{equation}
+\label{r1}
+    m_1\dot{y_2}+(k_1+k_2)y_1-k_2y_3=0
+\end{equation}
+\begin{equation}
+\label{r2}
+    m_2\dot{y_4}-k_2y_1+(k_2+k_3)y_3 = 0
+\end{equation}
+
+Taking equations \eqref{r1} and \eqref{r2}, the system can be written as a matrix as follows, 
+
+\begin{equation}
+\label{matrixeq}
+        \left[ {\begin{array}{c}
+         \dot{y_1}\\
+         \dot{y_2}\\
+         \dot{y_3}\\
+        \dot{y_4}\\
+         \end{array} } \right] =
+         \left[ {\begin{array}{c}
+       y_2 \\
+         \frac{-(k_1+k_2)y_1+k_2y_3}{m_1}\\
+       y_4\\
+         \frac{+k_2y_1-(k_2+k_3)y_3 }{m_2}\\
+         \end{array}} \right],
+\end{equation}
+
+\section{ Numerical integration technique for Runge-Kutta fourth order method}
+\paragraph{}
+
+In this section, we apply the numerical integration technique for Runge-Kutta fourth order method to solve above two degree of freedom spring mass system. The technique of Runge-Kutta fourth order method was discussed more in detail in section \ref{Num}. Before going to solve above equations \eqref{matrixeq} each of these equations equal to some function of three variables. After that, each and every $K$ (different from spring constant) values will be updated in every Runge-Kutta iteration.  
+
+Let consider the $\dot{y_1}$ and $\dot{y_2}$. 
+\begin{equation}
+\label{y1}
+    \dot{y_1} = y_2 = F_1(t,y_1,y_2)
+\end{equation}
+
+\begin{equation}
+\label{y2}
+    \dot{y_2} = \frac{-(k_1+k_2)y_1+k_2y_3}{m_1} = F_2(t,y_1,y_2)
+\end{equation}
+
+Considering above equations \eqref{y1} and \eqref{y2} we can write Runge-Kutta iterations as below. Let consider the $F_1$ function. 
+
+
+\begin{equation}
+    {K_{1y_1}} = F_1(t_i,{y_1}_i,{y_2}_i)
+\end{equation}
+
+\begin{equation}
+    {K_{2y_1}} = F_1\left( {{t_i}+\frac{h}{2} + {y_1}_i+{h K_{1y_1} \over 2},{y_2}_i + {h K_{1y_1} \over 2}} \right)
+\end{equation}
+
+\begin{equation}
+    {K_{3y_1}} = F_1\left( {{t_i}+\frac{h}{2} + {y_1}_i+{h K_{2y_1} \over 2},{y_2}_i + {h K_{2y_1} \over 2}} \right)
+\end{equation}
+
+\begin{equation}
+    {K_{4y_1}} = F_1\left( {{t_i}+h, {y_1}_i+{h K_{3y_1}},{y_2}_i + {h K_{3y_1}}} \right)
+\end{equation}
+
+\begin{equation}
+    {y_1}_{i+1} = {y_1}_i +h \left( K_{1y_1}+ 2K_{2y_1} + 2k_{3y_1} +K_{4y_1}  \over 6 \right)
+\end{equation}
+
+Let consider the $F_2$ function. 
+
+\begin{equation}
+    {K_{1y_2}} = F_2(t_i,{y_1}_i,{y_2}_i)
+\end{equation}
+
+\begin{equation}
+    {K_{2y_2}} = F_2\left( {{t_i}+\frac{h}{2} + {y_1}_i+{h K_{1y_2} \over 2},{y_2}_i + {h K_{1y_2} \over 2}} \right)
+\end{equation}
+
+\begin{equation}
+    {K_{3y_2}} = F_2\left( {{t_i}+\frac{h}{2} + {y_1}_i+{h K_{2y_2} \over 2},{y_2}_i + {h K_{2y_1} \over 2}} \right)
+\end{equation}
+
+\begin{equation}
+    {K_{4y_2}} = F_2\left( {{t_i}+h, {y_1}_i+{h K_{3y_2}},{y_2}_i + {h K_{3y_2}}} \right)
+\end{equation}
+
+\begin{equation}
+    {y_2}_{i+1} = {y_2}_i +h \left( K_{1y_2}+ 2K_{2y_2} + 2k_{3y_2} +K_{4y_2}  \over 6 \right)
+\end{equation}
+
+
+
+Now let consider the $\dot{y_3}$ and $\dot{y_4}$. 
+
+\begin{equation}
+\label{y3}
+    \dot{y_3} = y_4 = F_3(t,y_3,y_4)
+\end{equation} 
+
+\begin{equation}
+\label{y4}
+    \dot{y_4} = \frac{+k_2y_1-(k_2+k_3)y_3 }{m_2} = F_4(t,y_3,y_4)
+\end{equation}
+
+Considering above equations \eqref{y3} and \eqref{y4} we can write Runge-Kutta iterations as below. Let consider the $F_3$ function.
+
+\begin{equation}
+    {K_{1y_3}} = F_3(t_i,{y_3}_i,{y_4}_i)
+\end{equation}
+
+\begin{equation}
+    {K_{2y_3}} = F_3\left( {{t_i}+\frac{h}{2} + {y_3}_i+{h K_{1y_3} \over 2},{y_4}_i + {h K_{1y_3} \over 2}} \right)
+\end{equation}
+
+\begin{equation}
+    {K_{3y_3}} = F_3\left( {{t_i}+\frac{h}{2} + {y_3}_i+{h K_{2y_3} \over 2},{y_4}_i + {h K_{2y_3} \over 2}} \right)
+\end{equation}
+
+\begin{equation}
+    {K_{4y_3}} = F_3\left( {{t_i}+h, {y_3}_i+{h K_{3y_3}},{y_4}_i + {h K_{3y_3}}} \right)
+\end{equation}
+
+\begin{equation}
+    {y_3}_{i+1} = {y_3}_i +h \left( K_{1y_3}+ 2K_{2y_3} + 2k_{3y_3} +K_{4y_3}  \over 6 \right)
+\end{equation}
+
+Let consider the $F_4$ function. 
+
+\begin{equation}
+    {K_{1y_4}} = F_4(t_i,{y_3}_i,{y_4}_i)
+\end{equation}
+
+\begin{equation}
+    {K_{2y_4}} = F_4\left( {{t_i}+\frac{h}{2} + {y_3}_i+{h K_{1y_4} \over 2},{y_4}_i + {h K_{1y_4} \over 2}} \right)
+\end{equation}
+
+\begin{equation}
+    {K_{3y_4}} = F_4\left( {{t_i}+\frac{h}{2} + {y_3}_i+{h K_{2y_4} \over 2},{y_4}_i + {h K_{2y_4} \over 2}} \right)
+\end{equation}
+
+\begin{equation}
+    {K_{4y_4}} = F_4\left( {{t_i}+h, {y_3}_i+{h K_{3y_4}},{y_4}_i + {h K_{3y_4}}} \right)
+\end{equation}
+
+\begin{equation}
+    {y_4}_{i+1} = {y_4}_i +h \left( K_{1y_4}+ 2K_{2y_4} + 2k_{3y_4} +K_{4y_4}  \over 6 \right)
+\end{equation}
+
+In this section, the mathematical model development of the mass coupled with spring for two degree freedom system was introduced using the Runge-Kutta method of fourth order. It should always be noted that the strategy performs with first-order differential equations, so the system of equations must be managed to bring it to that level eventually. 
+
+\section{Numerical analysis of two-dimensional spring mass system}
+\paragraph{}
+
+ This section shows the mathematical modeling process of a mechanical system of a mass coupled by four springs and which is fixed at the four rigid body. The mass $m$ is free to move in the $XY$ plan. The process of movement of the mass system (2D) was described in section \ref{XY}. Eventually, we were able to obtain two second order ordinary differential equations corresponding to $x$ and $y$ coordinates. With the last method we discussed, With this case, it is also expected to achieve better precision modelling of the initial value problem. Finally, as discussed in section \ref{sec:4.1}, an analysis of the two mathematical models will be performed using the same procedure with the Runge-Kutta fourth order method.
